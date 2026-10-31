@@ -2,6 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Forecast — minimal weather app</title><meta name="description" content="A minimal, beautiful weather app for Android."><meta property="og:title" content="Forecast"><meta property="og:description" content="A minimal, beautiful weather app for Android.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f5f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2v2M4.93 4.93l1.41 1.41M2 12h2M4.93 19.07l1.41-1.41M12 22v-2M19.07 19.07l-1.41-1.41M22 12h-2M19.07 4.93l-1.41 1.41'/><path d='M19 16.5a3.5 3.5 0 0 0-3.5-3.5H15a5 5 0 1 0-9.5 2.5H4a3 3 0 0 0 0 6h15a3 3 0 0 0 0-6z'/></svg>">
 <style>
 :root{--bg:#0a0a0b;--card:#121214;--bd:#232326;--tx:#f5f5f6;--mu:#8d8d95;--dot:255,255,255;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f4f4f5;--card:#fff;--bd:#e0e0e4;--tx:#101012;--mu:#6b6b73;--dot:0,0,0;color-scheme:light}}
@@ -59,7 +60,18 @@ html.fp,html.fp body{height:100%;overflow:hidden}
 #lm li[aria-selected=true]{background:rgba(var(--dot),.13)}
 #th{padding:8px 14px;min-width:40px}
 .fp .sec{padding-top:72px;padding-bottom:24px}
-@media(max-width:720px){#lm{position:fixed;left:12px;right:12px;bottom:12px;top:auto;width:auto;max-height:70vh;overflow:auto;transform:translateY(24px);transform-origin:bottom}#lm.open{transform:none}}
+@media(max-width:720px){
+  #lm{position:fixed!important;left:16px!important;right:16px!important;bottom:16px!important;top:auto!important;width:auto!important;max-height:60vh!important;overflow-y:auto!important;transform:translateY(16px)!important;transform-origin:bottom center;z-index:9999}
+  #lm.open{transform:translateY(0)!important}
+  header{padding:12px 16px 0;gap:6px}
+  .ctl{padding:8px 12px}
+  .fp .hero,.free .hero{display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;padding:calc(env(safe-area-inset-top,0px) + 60px) 24px calc(env(safe-area-inset-bottom,0px) + 40px)!important;min-height:100svh!important;max-width:100%!important}
+  .hero h1{font-size:clamp(52px,15vw,80px)!important;margin-bottom:12px!important}
+  .hero .sub{font-size:18px!important;margin-bottom:32px!important;line-height:1.45;max-width:100%}
+  .hero .btn{padding:16px 36px!important;font-size:17px!important;width:auto!important;align-self:flex-start!important;border-radius:999px!important}
+  .hero .hint{margin-top:16px!important;font-size:12px!important}
+  #ph{display:none!important}
+}
 .hero{position:relative}
 #ph{display:none;position:absolute;right:0;top:0;bottom:0;margin:auto 0;height:min(560px,70vh);aspect-ratio:390/845;pointer-events:auto}
 .fp #ph,.free #ph{display:block}.free .hero{max-width:1000px}
@@ -160,10 +172,22 @@ var TXT={en:["System","Dark","Light"]};
 tr("en");
 // download
 var b=document.getElementById("dl");
-b.onclick=async function(){try{var d=await claude.use("downloads");if(!d){alert("Download is unavailable in this view.");return}
-var s=atob(document.getElementById("z").textContent.trim()),u=new Uint8Array(s.length);
-for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);
-await d.save({filename:"Forecast-app.zip",data:new Blob([u],{type:"application/zip"})})}catch(e){}};
+b.onclick=async function(){
+  try{
+    var s=atob(document.getElementById("z").textContent.trim()),u=new Uint8Array(s.length);
+    for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);
+    var blob=new Blob([u],{type:"application/vnd.android.package-archive"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    a.href=url;
+    a.download="Forecast.apk";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url)},1500);
+  }catch(e){
+    alert("Download failed: "+e.message);
+  }
+};
 // dots
 var cv=document.getElementById("c"),x=cv.getContext("2d"),W,H,P=[];
 function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight;P=[];var g=26;
@@ -200,7 +224,7 @@ lv.forEach(function(v){mo.observe(v.b,{attributes:true,attributeFilter:["class"]
 addEventListener("mousemove",function(e){var x=e.clientX/innerWidth-.5,y=e.clientY/innerHeight-.5;pi.style.backgroundPosition=(50+x*70)+"% "+(50+y*70)+"%";pi.style.transform="perspective(1300px) rotateY("+(-14+x*8)+"deg) rotateX("+(6-y*6)+"deg) rotateZ(3deg)"});
 })();
 (function(){
-var mq=matchMedia("(min-width:900px) and (hover:hover) and (pointer:fine)"),H=document.documentElement;
+var mq=matchMedia("(min-width:0px)"),H=document.documentElement;
 var sl=[].slice.call(document.querySelectorAll(".hero,.sec")),nav=document.getElementById("nav");
 document.querySelectorAll(".hero>*,.txt,.col img,.col .lv").forEach(function(e){e.classList.add("rv")});
 sl.forEach(function(s,k){s.classList.add("sl");var d=document.createElement("span");d.onclick=function(){if(fp&&k!==i)go(k,1)};nav.appendChild(d)});
@@ -224,6 +248,9 @@ else if(i>0){go(i-1,1);lock=n+950}}
 addEventListener("wheel",function(e){if(!fp||lm.classList.contains("open"))return;e.preventDefault();if(Math.abs(e.deltaY)<4)return;step(e.deltaY>0?1:-1)},{passive:false});
 addEventListener("keydown",function(e){if(!fp||lm.classList.contains("open"))return;
 var d={ArrowDown:1,PageDown:1," ":1,ArrowUp:-1,PageUp:-1}[e.key];if(d){e.preventDefault();step(d)}});
+var sy=0;
+addEventListener("touchstart",function(e){if(!fp||e.touches.length!==1)return;sy=e.touches[0].clientY},{passive:true});
+addEventListener("touchend",function(e){if(!fp||lm.classList.contains("open"))return;var dy=e.changedTouches[0].clientY-sy;if(Math.abs(dy)>40){step(dy<0?1:-1)}},{passive:true});
 var io=new IntersectionObserver(function(es){es.forEach(function(e){if(!fp&&e.isIntersecting){e.target.classList.add("on");io.unobserve(e.target)}})},{threshold:.15});
 function mode(){var wf=H.classList.contains("free");H.classList.remove("free");fp=mq.matches;H.classList.toggle("fp",fp);clr();
 if(fp){io.disconnect();go(0,wf?1:0)}
